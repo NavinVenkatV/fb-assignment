@@ -13,53 +13,59 @@ import {
 import "@xyflow/react/dist/style.css";
 import { IoPersonAddOutline } from "react-icons/io5";
 
-export default function Node({ setLead, leadName }: { setLead: (val: boolean) => void; leadName: any }) {
+export default function Node({ setLead, leadName, setEmail, setSelectedEmail, emailTemplate } : {
+    setLead ?: any, leadName ?: String, setEmail : any, setSelectedEmail ?: any, emailTemplate ?: any
+}) {
     const [nodes, setNodes, onNodesChange] = useNodesState([
         { id: "1", type: "leadNode", position: { x: 100, y: 70 }, data: { label: "Add Lead Source", leadName: null } },
         { id: "2", type: "simpleNode", position: { x: 100, y: 250 }, data: { label: "Sequence Start Point" } },
         { id: "3", type: "thirdNode", position: { x: 180, y: 350 }, data: { label: "+" } }
     ]);
 
+    // Fixed edge connections: leadNode -> simpleNode -> thirdNode
     const [edges, setEdges, onEdgesChange] = useEdgesState([
-        { id: "e2-1", source: "2", target: "1" }, // Simple Node → Lead Node
-        { id: "e3-2", source: "3", target: "1" }  // Third Node → Simple Node
+        { id: "e1-2", source: "1", target: "2" }, // Connects leadNode to simpleNode
+        { id: "e2-3", source: "2", target: "3" }  // Connects simpleNode to thirdNode
     ]);
-    
 
     const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', emailTemplate)
     useEffect(() => {
         if (leadName) {
-            const existingPairs = nodes.length / 2;
+            const existingPairs = Math.floor(nodes.length / 3); // Changed to 3 since we have 3 nodes per chain
             const offsetX = existingPairs * 250;
 
             const newLeadNode = {
                 id: `${nodes.length + 1}`,
                 type: "leadNode",
                 position: { x: 100 + offsetX, y: 70 },
-                data: { label: leadName, leadName }, // Store leadName properly
+                data: { label: leadName, leadName },
             };
 
             const newSimpleNode = {
                 id: `${nodes.length + 2}`,
                 type: "simpleNode",
-                position: { x: 125 + offsetX, y: 250 },
+                position: { x: 100 + offsetX, y: 250 },
                 data: { label: "Sequence Start Point" },
             };
             
-            const thirdNode = {
+            const newThirdNode = {
                 id: `${nodes.length + 3}`,
                 type: "thirdNode",
-                position: { x: 125 + offsetX, y: 350 },
+                position: { x: 180 + offsetX, y: 350 },
                 data: { label: "+" },
-            }
+            };
 
-            setNodes((prev) => [...prev, newLeadNode, newSimpleNode, thirdNode]);
-            setEdges((prev) => [...prev, { id: `e${nodes.length + 1}-${nodes.length + 2}`, source: `${nodes.length + 1}`, target: `${nodes.length + 2}` }]);
+            setNodes((prev) => [...prev, newLeadNode, newSimpleNode, newThirdNode]);
+            setEdges((prev) => [
+                ...prev,
+                { id: `e${nodes.length + 1}-${nodes.length + 2}`, source: `${nodes.length + 1}`, target: `${nodes.length + 2}` },
+                { id: `e${nodes.length + 2}-${nodes.length + 3}`, source: `${nodes.length + 2}`, target: `${nodes.length + 3}` }
+            ]);
         }
     }, [leadName]);
 
-    const LeadNode = ({ data }: any) => {
+    const LeadNode = ({ data }) => {
         return (
             <div
                 style={{
@@ -87,23 +93,25 @@ export default function Node({ setLead, leadName }: { setLead: (val: boolean) =>
                 {data.leadName && (
                     <>
                         <div style={{ fontSize: "16px", fontWeight: "bold", marginTop: "5px" }} className="ml-6">Leads from</div>
-                        <div style={{ fontSize: "14px", fontWeight: "bold", marginTop: "5px" }} className="text-pink-500 flex ">
-                            <div className="p-5 bg-pink-200 w-[50px] rounded-xl border border-pink-500 h-[50px] mr-4 "><IoPersonAddOutline /></div>
+                        <div style={{ fontSize: "14px", fontWeight: "bold", marginTop: "5px" }} className="text-pink-500 flex">
+                            <div className="p-5 bg-pink-200 w-[50px] rounded-xl border border-pink-500 h-[50px] mr-4"><IoPersonAddOutline /></div>
                             <div className="flex flex-col items-center justify-center text-center">
-                            {data.leadName.split(",").map((lead: string, index: number) => (
-                                <div className="flex flex-col justify-start" key={index}>{lead.trim()} <span>Jan 2025</span></div>
-                            ))}
+                                {data.leadName.split(",").map((lead, index) => (
+                                    <div className="flex flex-col justify-start" key={index}>
+                                        {lead.trim()} <span>Jan 2025</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </>
                 )}
-
                 <Handle type="source" position={Position.Bottom} />
+                <Handle type="target" position={Position.Top} /> {/* Added target handle */}
             </div>
         );
     };
 
-    const SimpleNode = ({ data }: any) => {
+    const SimpleNode = ({ data }) => {
         return (
             <div
                 style={{
@@ -118,15 +126,23 @@ export default function Node({ setLead, leadName }: { setLead: (val: boolean) =>
             >
                 <div style={{ fontSize: "16px", fontWeight: "bold", marginTop: "5px" }}>{data.label}</div>
                 <Handle type="target" position={Position.Top} />
+                <Handle type="source" position={Position.Bottom} /> {/* Added source handle */}
             </div>
         );
     };
 
-    const ThirdNode = ({ data }: any) => {
+    const ThirdNode = ({ data }) => {
         return (
-            <div className="px-3 py-1  border-blue-500 border-2 rounded-lg ">
-                <div className="flex flex-col justify-center items-center text-center">{data.label}</div>
+            <div
+            onClick={()=>{
+                setEmail(true)
+                setSelectedEmail(false)
+            }}
+             className="px-3 py-1 border-blue-500 border-2 cursor-pointer rounded-lg">
+                <div 
+                className="flex flex-col justify-center items-center text-center">{data.label}</div>
                 <Handle type="target" position={Position.Top} />
+                <Handle type="source" position={Position.Bottom} /> {/* Added source handle */}
             </div>
         );
     };
