@@ -6,6 +6,7 @@ import Lead from './component/lead'
 import SelectLeads from './component/selectLeads'
 import Email from './component/email'
 import EmailTemplate from './component/emailTemplate'
+import Save from './component/save'
 
 function App() {
   const [ lead, setLead ] = useState(false)
@@ -14,12 +15,13 @@ function App() {
   const [ selectLead, setSelectedLead ] = useState(false);
   const [ leadName, setLeadName ] = useState("");
   const [ emailTemplate, setEmailTemplate ] = useState("");
-  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", emailTemplate)
+  // console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", emailTemplate)
 
   return (
     <div className="w-full h-screen px-5 py-2 z-0 relative">
       <NavBar />
-      <div className="flex justify-center items-center border bg-neutral-100 p-2 rounded-xl">
+      <Save leadName={leadName} emailTemplate={emailTemplate}/>
+      <div className="flex justify-center items-center border border-neutral-300 bg-neutral-100 p-2 rounded-xl">
         <div className="bg-white">
           <Node leadName={leadName} setLead={setLead} setEmail={setEmail} setSelectedEmail={setSelectedEmail} emailTemplate={emailTemplate}/>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 
+
 function SelectLeads({setEmailTemplate, setSelectedEmail} : any) {
   const allLeads = ["Template 2", "Template 3", "Template 4", "Template 5", "Template 6", "Template 7", "Template 8"]; // Sample leads
   const [selectedLead, setSelectedEmails] = useState<string | null>(null);
